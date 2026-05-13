@@ -20,4 +20,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+
+    @ExceptionHandler(ProductAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleProductAlreadyExists(ProductAlreadyExistsException ex){
+       ErrorResponse response = ErrorResponse.builder()
+               .timestamp(LocalDateTime.now())
+               .status(HttpStatus.BAD_REQUEST.value())
+               .message(ex.getMessage())
+               .build();
+
+       return ResponseEntity.badRequest().body(response);
+    }
 }

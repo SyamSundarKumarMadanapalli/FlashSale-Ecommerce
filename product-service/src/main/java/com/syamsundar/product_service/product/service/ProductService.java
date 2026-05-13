@@ -1,5 +1,6 @@
 package com.syamsundar.product_service.product.service;
 
+import com.syamsundar.product_service.common.exception.ProductAlreadyExistsException;
 import com.syamsundar.product_service.common.exception.ProductNotFoundException;
 import com.syamsundar.product_service.product.dto.CreateProductRequest;
 import com.syamsundar.product_service.product.dto.ProductResponse;
@@ -23,6 +24,9 @@ public class ProductService {
         product.setTotalStock(request.getStock());
         product.setAvailableStock(request.getStock());
 
+        if(productRepository.existsByName(product.getName())){
+            throw new ProductAlreadyExistsException("Product already exists");
+        }
         Product savedProduct = productRepository.save(product);
 
         return ProductResponse.builder()
