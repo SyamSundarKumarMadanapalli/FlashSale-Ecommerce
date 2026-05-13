@@ -1,11 +1,14 @@
 package com.syamsundar.product_service.product.service;
 
+import com.syamsundar.product_service.common.exception.ProductNotFoundException;
 import com.syamsundar.product_service.product.dto.CreateProductRequest;
 import com.syamsundar.product_service.product.dto.ProductResponse;
 import com.syamsundar.product_service.product.entity.Product;
 import com.syamsundar.product_service.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,19 @@ public class ProductService {
                 .name(savedProduct.getName())
                 .price(savedProduct.getPrice())
                 .availableStock(savedProduct.getAvailableStock())
+                .build();
+    }
+
+    public ProductResponse getProduct(UUID productId){
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .availableStock(product.getAvailableStock())
                 .build();
     }
 }

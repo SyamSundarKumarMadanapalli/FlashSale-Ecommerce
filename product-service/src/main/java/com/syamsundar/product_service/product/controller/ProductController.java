@@ -5,10 +5,9 @@ import com.syamsundar.product_service.product.dto.ProductResponse;
 import com.syamsundar.product_service.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
@@ -20,5 +19,10 @@ public class ProductController {
     @PostMapping
     public ProductResponse createProduct(@Valid @RequestBody CreateProductRequest request){
         return productService.createProduct(request);
+    }
+
+    @GetMapping("/{productId}")
+    public ProductResponse getProduct(@PathVariable UUID productId){
+        return productService.getProduct(productId);
     }
 }
