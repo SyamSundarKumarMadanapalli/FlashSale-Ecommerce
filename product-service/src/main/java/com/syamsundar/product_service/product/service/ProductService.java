@@ -1,11 +1,15 @@
 package com.syamsundar.product_service.product.service;
 
+import com.syamsundar.product_service.common.exception.OutOfStockException;
 import com.syamsundar.product_service.common.exception.ProductAlreadyExistsException;
 import com.syamsundar.product_service.common.exception.ProductNotFoundException;
 import com.syamsundar.product_service.product.dto.CreateProductRequest;
 import com.syamsundar.product_service.product.dto.ProductResponse;
+import com.syamsundar.product_service.product.dto.PurchaseRequest;
+import com.syamsundar.product_service.product.dto.PurchaseResponse;
 import com.syamsundar.product_service.product.entity.Product;
 import com.syamsundar.product_service.product.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +51,20 @@ public class ProductService {
                 .name(product.getName())
                 .price(product.getPrice())
                 .availableStock(product.getAvailableStock())
+                .build();
+    }
+
+    @Transactional
+    public PurchaseResponse purchaseProduct(PurchaseRequest request){
+
+        int updatedRows = productRepository.decrementStock(request.getProductId());
+
+        if(updatedRows == 0){
+            throw new OutOfStockException("Product out of Stock");
+        }
+
+        return PurchaseResponse.builder()
+                .message("Purchase Successful")
                 .build();
     }
 }

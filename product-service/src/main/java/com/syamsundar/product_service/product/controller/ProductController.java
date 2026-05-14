@@ -2,6 +2,8 @@ package com.syamsundar.product_service.product.controller;
 
 import com.syamsundar.product_service.product.dto.CreateProductRequest;
 import com.syamsundar.product_service.product.dto.ProductResponse;
+import com.syamsundar.product_service.product.dto.PurchaseRequest;
+import com.syamsundar.product_service.product.dto.PurchaseResponse;
 import com.syamsundar.product_service.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,5 +26,10 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ProductResponse getProduct(@PathVariable UUID productId){
         return productService.getProduct(productId);
+    }
+
+    @PostMapping("/purchase")
+    public PurchaseResponse purchaseProduct(@Valid @RequestBody PurchaseRequest request){
+        return productService.purchaseProduct(request);
     }
 }
