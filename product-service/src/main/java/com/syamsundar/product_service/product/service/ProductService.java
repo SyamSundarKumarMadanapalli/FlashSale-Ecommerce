@@ -11,6 +11,7 @@ import com.syamsundar.product_service.product.entity.Product;
 import com.syamsundar.product_service.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -41,8 +42,9 @@ public class ProductService {
                 .build();
     }
 
+    @Cacheable(value = "products", key = "#productId")
     public ProductResponse getProduct(UUID productId){
-
+        System.out.println("Fetching product from DB...----------------------------------------------------------------");
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 
