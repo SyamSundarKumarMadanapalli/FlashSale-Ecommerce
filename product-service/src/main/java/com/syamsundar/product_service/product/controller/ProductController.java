@@ -7,6 +7,7 @@ import com.syamsundar.product_service.product.dto.PurchaseResponse;
 import com.syamsundar.product_service.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -31,5 +32,17 @@ public class ProductController {
     @PostMapping("/purchase")
     public PurchaseResponse purchaseProduct(@Valid @RequestBody PurchaseRequest request){
         return productService.purchaseProduct(request);
+    }
+
+    @PostMapping("/{productId}/decrement")
+    public ResponseEntity<String> decrementStock(@PathVariable UUID productId){
+        boolean success = productService.decrementStock(productId);
+
+        if(!success){
+            return ResponseEntity.badRequest()
+                    .body("Out of Stock");
+        }
+
+        return ResponseEntity.ok("Stock decremented");
     }
 }
