@@ -3,6 +3,7 @@ package com.syamsundar.product_service.product.service;
 import com.syamsundar.product_service.common.exception.OutOfStockException;
 import com.syamsundar.product_service.common.exception.ProductAlreadyExistsException;
 import com.syamsundar.product_service.common.exception.ProductNotFoundException;
+import com.syamsundar.product_service.messaging.producer.StockEventProducer;
 import com.syamsundar.product_service.product.dto.CreateProductRequest;
 import com.syamsundar.product_service.product.dto.ProductResponse;
 import com.syamsundar.product_service.product.dto.PurchaseRequest;
@@ -22,6 +23,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StockEventProducer stockEventProducer;
 
     public ProductResponse createProduct(CreateProductRequest request){
         Product product = new Product();
@@ -68,9 +70,13 @@ public class ProductService {
     @Transactional
     public PurchaseResponse purchaseProduct(PurchaseRequest request){
 
-        int updatedRows = productRepository.decrementStock(request.getProductId());
-        if(updatedRows == 0){
-            throw new OutOfStockException("Product out of Stock");
+        boolean success =
+                decrementStock(request.getProductId());
+
+        if (!success) {
+            throw new OutOfStockException(
+                    "Product out of Stock"
+            );
         }
 
         return PurchaseResponse.builder()
@@ -106,6 +112,7 @@ public class ProductService {
             return false;
         }
 
+        stockEventProducer.publish(productId);
         return true;
     }
 }
