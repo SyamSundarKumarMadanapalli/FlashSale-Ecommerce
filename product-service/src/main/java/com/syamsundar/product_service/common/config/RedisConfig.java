@@ -20,7 +20,6 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
-    // Helper method to keep your JSON serialization rules identical across Cache and Template
     private GenericJacksonJsonRedisSerializer createSharedJsonSerializer() {
         PolymorphicTypeValidator typeValidator = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType("com.syamsundar.product_service")
@@ -53,17 +52,14 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory){
-        // 💡 Uses the builder-based serializer instead of the blank manual ObjectMapper instantiation
         GenericJacksonJsonRedisSerializer serializer = createSharedJsonSerializer();
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Plain text keys
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
 
-        // Safe, typed JSON values
         template.setValueSerializer(serializer);
         template.setHashValueSerializer(serializer);
 

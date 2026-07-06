@@ -26,7 +26,7 @@ public class ProductController {
 
     @GetMapping("/{productId}")
     public ProductResponse getProduct(@PathVariable UUID productId){
-        return productService.getProduct(productId);
+        return productService.getProductWithStock(productId);
     }
 
     @PostMapping("/purchase")

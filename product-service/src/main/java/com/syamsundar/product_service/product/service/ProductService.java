@@ -16,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.UUID;
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final StockEventProducer stockEventProducer;
+    private final ProductCacheService productCacheService;
 
     public ProductResponse createProduct(CreateProductRequest request){
         Product product = new Product();
@@ -53,18 +55,19 @@ public class ProductService {
                 .build();
     }
 
-    @Cacheable(value = "products", key = "#productId")
-    public ProductResponse getProduct(UUID productId){
-        System.out.println("Fetching product from DB...----------------------------------------------------------------");
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
+    public ProductResponse getProductWithStock(UUID productId) {
 
-        return ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .availableStock(product.getAvailableStock())
-                .build();
+        ProductResponse response = productCacheService.getProduct(productId);
+        Object stockObj = redisTemplate.opsForValue()
+                .get("stock:" + productId);
+
+        if (stockObj != null) {
+            response.setAvailableStock(
+                    Integer.parseInt(stockObj.toString())
+            );
+        }
+
+        return response;
     }
 
     @Transactional
@@ -89,23 +92,21 @@ public class ProductService {
     public boolean decrementStock(UUID productId) {
         String redisKey = "stock:" + productId;
 
-        Long stock = redisTemplate.opsForValue().decrement(redisKey);
-        if (stock == null) {
-
+        if(Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))){
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 
-            int currentDbStock = product.getAvailableStock();
-
-            if (currentDbStock <= 0) {
+            if (product.getAvailableStock() <= 0) {
                 return false;
             }
 
-            redisTemplate.opsForValue().set(redisKey, currentDbStock);
-            redisTemplate.expire(redisKey, java.time.Duration.ofDays(3));
+            redisTemplate.opsForValue()
+                    .set(redisKey, product.getAvailableStock());
 
-            stock = redisTemplate.opsForValue().decrement(redisKey);
+            redisTemplate.expire(redisKey, Duration.ofDays(3));
         }
+
+        Long stock = redisTemplate.opsForValue().decrement(redisKey);
 
         if (stock < 0) {
             redisTemplate.opsForValue().increment(redisKey);
@@ -113,6 +114,7 @@ public class ProductService {
         }
 
         stockEventProducer.publish(productId);
+
         return true;
     }
 }
