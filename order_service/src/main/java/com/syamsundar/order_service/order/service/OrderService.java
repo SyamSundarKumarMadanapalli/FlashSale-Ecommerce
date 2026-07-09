@@ -1,0 +1,60 @@
+package com.syamsundar.order_service.order.service;
+
+import com.syamsundar.order_service.common.exception.OrderNotFoundException;
+import com.syamsundar.order_service.order.dto.CreateOrderRequest;
+import com.syamsundar.order_service.order.dto.OrderResponse;
+import com.syamsundar.order_service.order.entity.Order;
+import com.syamsundar.order_service.order.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+
+    public OrderResponse createOrder(CreateOrderRequest request) {
+        Order order = new Order();
+        order.setProductId(request.getProductId());
+        order.setQuantity(request.getQuantity());
+
+        Order savedOrder = orderRepository.save(order);
+
+        return mapToResponse(savedOrder);
+    }
+
+
+    public OrderResponse getOrder(UUID orderId) {
+
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException("Order Not Found"));
+
+        return mapToResponse(order);
+    }
+
+
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+
+        for (Order order : orders) {
+            orderResponseList.add(mapToResponse(order));
+        }
+
+        return orderResponseList;
+    }
+
+
+    private OrderResponse mapToResponse(Order order) {
+        return OrderResponse.builder()
+                .id(order.getId())
+                .productId(order.getProductId())
+                .quantity(order.getQuantity())
+                .status(order.getOrderStatus())
+                .build();
+    }
+}

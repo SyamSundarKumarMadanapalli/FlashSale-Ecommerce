@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleProductNotFount(ProductNotFoundException ex){
+    public ResponseEntity<ErrorResponse> handleProductNotFound(ProductNotFoundException ex){
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
