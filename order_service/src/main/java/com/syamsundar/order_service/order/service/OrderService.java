@@ -1,10 +1,14 @@
 package com.syamsundar.order_service.order.service;
 
 import com.syamsundar.order_service.common.exception.OrderNotFoundException;
+import com.syamsundar.order_service.order.OrderStatus;
 import com.syamsundar.order_service.order.dto.CreateOrderRequest;
 import com.syamsundar.order_service.order.dto.OrderResponse;
 import com.syamsundar.order_service.order.entity.Order;
 import com.syamsundar.order_service.order.repository.OrderRepository;
+import com.syamsundar.order_service.product.client.ProductClient;
+import com.syamsundar.order_service.product.dto.PurchaseRequest;
+import com.syamsundar.order_service.product.dto.PurchaseResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +21,29 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductClient productClient;
 
     public OrderResponse createOrder(CreateOrderRequest request) {
+        PurchaseRequest purchaseRequest = new PurchaseRequest();
+        purchaseRequest.setProductId(request.getProductId());
+        purchaseRequest.setUserId(request.getUserId());
+        purchaseRequest.setQuantity(request.getQuantity());
+
+        PurchaseResponse purchaseResponse = productClient.purchaseProduct(purchaseRequest);
+
         Order order = new Order();
         order.setProductId(request.getProductId());
         order.setQuantity(request.getQuantity());
 
-        Order savedOrder = orderRepository.save(order);
+        if(purchaseResponse.getMessage().equals("Purchase Successful")){
+            order.setOrderStatus(OrderStatus.CREATED);
+            Order savedOrder = orderRepository.save(order);
 
-        return mapToResponse(savedOrder);
+            return mapToResponse(savedOrder);
+        }
+
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        return mapToResponse(order);
     }
 
 

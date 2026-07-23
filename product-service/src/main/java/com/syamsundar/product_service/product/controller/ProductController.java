@@ -34,15 +34,15 @@ public class ProductController {
         return productService.purchaseProduct(request);
     }
 
-    @PostMapping("/{productId}/decrement")
-    public ResponseEntity<String> decrementStock(@PathVariable UUID productId){
-        boolean success = productService.decrementStock(productId);
-
-        if(!success){
-            return ResponseEntity.badRequest()
-                    .body("Out of Stock");
-        }
-
-        return ResponseEntity.ok("Stock decremented");
-    }
+//    @PostMapping("/{productId}/decrement")
+//    public ResponseEntity<String> decrementStock(@PathVariable UUID productId){
+//        boolean success = productService.decrementStock(productId);
+//
+//        if(!success){
+//            return ResponseEntity.badRequest()
+//                    .body("Out of Stock");
+//        }
+//
+//        return ResponseEntity.ok("Stock decremented");
+//    }
 }

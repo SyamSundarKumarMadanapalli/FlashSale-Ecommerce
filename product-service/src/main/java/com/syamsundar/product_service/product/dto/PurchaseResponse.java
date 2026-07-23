@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class PurchaseResponse {
+public class
+PurchaseResponse {
 
     private String message;
 }

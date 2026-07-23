@@ -19,6 +19,6 @@ public class StockEventConsumer {
     )
 
     public void consume(StockDecrementEvent event){
-        productRepository.decrementStock(event.productId());
+        productRepository.decrementStock(event.productId(), event.quantity());
     }
 }

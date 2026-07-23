@@ -12,12 +12,12 @@ import java.util.UUID;
 public class StockEventProducer {
     private final KafkaTemplate<String, StockDecrementEvent> kafkaTemplate;
 
-    public void publish(UUID productId){
+    public void publish(UUID productId, int quantity){
 
         kafkaTemplate.send(
                 "stock-decrement-topic",
                 new StockDecrementEvent(productId,
-                        1
+                        quantity
                 )
         );
     }

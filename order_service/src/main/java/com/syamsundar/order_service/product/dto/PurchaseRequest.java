@@ -1,4 +1,4 @@
-package com.syamsundar.product_service.product.dto;
+package com.syamsundar.order_service.product.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -20,3 +20,4 @@ public class PurchaseRequest {
     @Min(1)
     private Integer quantity;
 }
+

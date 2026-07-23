@@ -74,7 +74,7 @@ public class ProductService {
     public PurchaseResponse purchaseProduct(PurchaseRequest request){
 
         boolean success =
-                decrementStock(request.getProductId());
+                decrementStock(request);
 
         if (!success) {
             throw new OutOfStockException(
@@ -89,14 +89,19 @@ public class ProductService {
 
 
     @Transactional
-    public boolean decrementStock(UUID productId) {
-        String redisKey = "stock:" + productId;
+    public boolean decrementStock(PurchaseRequest request) {
+        String redisKey = "stock:" + request.getProductId();
+        Integer quantity = request.getQuantity();
+
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
 
         if(Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))){
-            Product product = productRepository.findById(productId)
+            Product product = productRepository.findById(request.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 
-            if (product.getAvailableStock() <= 0) {
+            if (product.getAvailableStock() <= quantity) {
                 return false;
             }
 
@@ -106,14 +111,18 @@ public class ProductService {
             redisTemplate.expire(redisKey, Duration.ofDays(3));
         }
 
-        Long stock = redisTemplate.opsForValue().decrement(redisKey);
+        Long stock = redisTemplate.opsForValue().decrement(redisKey, quantity);
 
-        if (stock < 0) {
-            redisTemplate.opsForValue().increment(redisKey);
+        if (stock == null) {
             return false;
         }
 
-        stockEventProducer.publish(productId);
+        if (stock < 0) {
+            redisTemplate.opsForValue().increment(redisKey, quantity);
+            return false;
+        }
+
+        stockEventProducer.publish(request.getProductId(), quantity);
 
         return true;
     }
