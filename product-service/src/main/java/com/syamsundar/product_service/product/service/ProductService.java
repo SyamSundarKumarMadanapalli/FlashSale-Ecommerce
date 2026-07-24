@@ -77,9 +77,12 @@ public class ProductService {
                 decrementStock(request);
 
         if (!success) {
-            throw new OutOfStockException(
-                    "Product out of Stock"
-            );
+            return PurchaseResponse.builder()
+                    .message("Stock unavailable")
+                    .build();
+//            throw new OutOfStockException(
+//                    "Product out of Stock"
+//            );
         }
 
         return PurchaseResponse.builder()
