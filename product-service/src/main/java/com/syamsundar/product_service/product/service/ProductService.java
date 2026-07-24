@@ -104,7 +104,7 @@ public class ProductService {
             Product product = productRepository.findById(request.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 
-            if (product.getAvailableStock() <= quantity) {
+            if (product.getAvailableStock() < quantity) {
                 return false;
             }
 
