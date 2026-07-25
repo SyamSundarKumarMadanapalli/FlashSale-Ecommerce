@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -16,8 +17,11 @@ public class StockEventProducer {
 
         kafkaTemplate.send(
                 "stock-decrement-topic",
-                new StockDecrementEvent(productId,
-                        quantity
+                new StockDecrementEvent(UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        productId,
+                        quantity,
+                        Instant.now()
                 )
         );
     }

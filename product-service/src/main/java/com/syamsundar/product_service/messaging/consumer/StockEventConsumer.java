@@ -25,16 +25,16 @@ public class StockEventConsumer {
 
     public void consume(StockDecrementEvent event){
 
-        if(processedEventRepository.existsById(event.getEventId())){
+        if(processedEventRepository.existsById(event.eventId())){
             return;
         }
 
-        productRepository.decrementStock(event.getProductId(), event.getQuantity());
+        productRepository.decrementStock(event.productId(), event.quantity());
 
         processedEventRepository.save(
                 new ProcessedEvent(
-                        event.getEventId(),
-                        Instant.now()
+                        event.eventId(),
+                        event.createdAt()
                 )
         );
     }
