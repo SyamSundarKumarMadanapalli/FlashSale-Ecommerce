@@ -2,10 +2,15 @@ package com.syamsundar.order_service.order;
 
 public enum OrderStatus {
 
-    CREATED,
-    RESERVED,
+    PENDING,
+
+    STOCK_RESERVED,
+
     PAYMENT_PENDING,
-    PAID,
-    CANCELLED,
-    FAILED
+
+    COMPLETED,
+
+    FAILED,
+
+    CANCELLED
 }

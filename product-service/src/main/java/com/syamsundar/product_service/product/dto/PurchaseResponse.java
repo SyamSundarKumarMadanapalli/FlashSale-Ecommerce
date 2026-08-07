@@ -9,4 +9,5 @@ public class
 PurchaseResponse {
 
     private String message;
+    private boolean success;
 }

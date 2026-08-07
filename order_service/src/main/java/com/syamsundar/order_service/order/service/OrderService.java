@@ -24,26 +24,31 @@ public class OrderService {
     private final ProductClient productClient;
 
     public OrderResponse createOrder(CreateOrderRequest request) {
+        Order order = new Order();
+
+        order.setProductId(request.getProductId());
+        order.setQuantity(request.getQuantity());
+        order.setOrderStatus(OrderStatus.PENDING);
+
+        order = orderRepository.save(order);
+
         PurchaseRequest purchaseRequest = new PurchaseRequest();
+
         purchaseRequest.setProductId(request.getProductId());
         purchaseRequest.setUserId(request.getUserId());
         purchaseRequest.setQuantity(request.getQuantity());
 
         PurchaseResponse purchaseResponse = productClient.purchaseProduct(purchaseRequest);
 
-        Order order = new Order();
-        order.setProductId(request.getProductId());
-        order.setQuantity(request.getQuantity());
-
-        if(purchaseResponse.getMessage().equals("Purchase Successful")){
-            order.setOrderStatus(OrderStatus.CREATED);
-            Order savedOrder = orderRepository.save(order);
-
-            return mapToResponse(savedOrder);
+        if(purchaseResponse.isSuccess()){
+            order.setOrderStatus(OrderStatus.STOCK_RESERVED);
+        }else{
+            order.setOrderStatus(OrderStatus.FAILED);
         }
 
-        order.setOrderStatus(OrderStatus.CANCELLED);
-        return mapToResponse(order);
+        Order savedOrder = orderRepository.save(order);
+
+        return mapToResponse(savedOrder);
     }
 
 

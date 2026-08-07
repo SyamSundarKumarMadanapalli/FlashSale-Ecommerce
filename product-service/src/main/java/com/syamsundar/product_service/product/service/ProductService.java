@@ -79,6 +79,7 @@ public class ProductService {
         if (!success) {
             return PurchaseResponse.builder()
                     .message("Stock unavailable")
+                    .success(false)
                     .build();
 //            throw new OutOfStockException(
 //                    "Product out of Stock"
@@ -87,6 +88,7 @@ public class ProductService {
 
         return PurchaseResponse.builder()
                 .message("Purchase Successful")
+                .success(true)
                 .build();
     }
 

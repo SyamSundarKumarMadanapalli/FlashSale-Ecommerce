@@ -1,20 +1,35 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:16
     container_name: flashsale-postgres
     environment:
-#      POSTGRES_DB: flashsale
+      #      POSTGRES_DB: flashsale
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
-
+    volumes:
+      # Persists database state, tables, and schemas
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # Added to support payment_service's condition: service_healthy
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: flashsale-redis
     ports:
       - "6379:6379"
+    # Enables AOF (Append Only File) so Redis writes operations to disk
+    command: redis-server --appendonly yes
+    volumes:
+      # Persists Redis cache and keys
+      - redis_data:/data
 
   kafka:
     image: apache/kafka:latest
@@ -32,17 +47,22 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-
+    volumes:
+      # Persists active Kafka topics, offsets, and event logs
+      - kafka_data:/var/lib/kafka/data
 
   product-service:
     build:
       context: ./product-service
-#      dockerfile: Dockerfile
+    #      dockerfile: Dockerfile
     container_name: product-service
     depends_on:
-      - postgres
-      - redis
-      - kafka
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
     ports:
       - "8081:8080"
     environment:
@@ -56,12 +76,15 @@ services:
   order_service:
     build:
       context: ./order_service
-#      dockerfile: Dockerfile
+    #      dockerfile: Dockerfile
     container_name: order_service
     depends_on:
-      - postgres
-      - redis
-      - kafka
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
     ports:
       - "8082:8080"
     environment:
@@ -71,3 +94,25 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  payment_service:
+    build: ./payment_service
+    container_name: payment_service
+    ports:
+      - "8083:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/flashsale_paymentdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+# Declare top-level named volumes
+volumes:
+  postgres_data:
+  redis_data:
+  kafka_data:

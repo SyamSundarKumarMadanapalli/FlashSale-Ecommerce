@@ -1,4 +1,4 @@
-package com.syamsundar.order_service.product.dto;
+package com.syamsundar.payment_service.payment.dto;
 
 import lombok.*;
 
@@ -7,8 +7,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PurchaseResponse {
+public class PaymentResponse {
+
+    private boolean success;
 
     private String message;
-    private boolean success;
 }
