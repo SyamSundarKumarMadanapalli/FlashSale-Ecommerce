@@ -17,6 +17,11 @@ public class PurchaseRequest {
     @NotNull
     private UUID userId;
 
+    @NotNull
+    private UUID orderId;
+
     @Min(1)
     private Integer quantity;
+
+    private Double amount;
 }

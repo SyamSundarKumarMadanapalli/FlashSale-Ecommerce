@@ -11,18 +11,22 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class StockEventProducer {
-    private final KafkaTemplate<String, StockDecrementEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publish(UUID productId, int quantity){
+    public void publish(UUID productId, UUID orderId, int quantity){
 
-        kafkaTemplate.send(
-                "stock-decrement-topic",
-                new StockDecrementEvent(UUID.randomUUID(),
+        StockDecrementEvent event =
+                new StockDecrementEvent(
                         UUID.randomUUID(),
+                        orderId,
                         productId,
                         quantity,
                         Instant.now()
-                )
+                );
+        kafkaTemplate.send(
+                "stock-decrement-topic",
+                productId.toString(),
+                event
         );
     }
 }

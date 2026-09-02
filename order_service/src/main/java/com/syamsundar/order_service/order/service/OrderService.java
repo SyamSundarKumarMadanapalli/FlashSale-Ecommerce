@@ -36,7 +36,9 @@ public class OrderService {
 
         purchaseRequest.setProductId(request.getProductId());
         purchaseRequest.setUserId(request.getUserId());
+        purchaseRequest.setOrderId(order.getId());
         purchaseRequest.setQuantity(request.getQuantity());
+        purchaseRequest.setAmount(request.getAmount());
 
         PurchaseResponse purchaseResponse = productClient.purchaseProduct(purchaseRequest);
 

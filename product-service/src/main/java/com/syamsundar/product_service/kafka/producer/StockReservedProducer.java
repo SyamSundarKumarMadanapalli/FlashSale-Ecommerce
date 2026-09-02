@@ -11,12 +11,12 @@ public class StockReservedProducer {
 
     private static final String TOPIC = "StockReserved";
 
-    private final KafkaTemplate<String, StockReservedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void publish(StockReservedEvent stockReservedEvent) {
 
         kafkaTemplate.send(
-                TOPIC,
+                "StockReserved",
                 stockReservedEvent.getOrderId().toString(),
                 stockReservedEvent
         );

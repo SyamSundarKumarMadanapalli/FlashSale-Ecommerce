@@ -2,6 +2,7 @@ package com.syamsundar.order_service.kafka.event;
 
 import lombok.*;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -11,6 +12,8 @@ import java.util.UUID;
 @Builder
 public class StockReservedEvent {
 
+    private UUID eventId;
+
     private UUID orderId;
 
     private UUID productId;
@@ -19,5 +22,5 @@ public class StockReservedEvent {
 
     private Integer quantity;
 
-    private Double amount;
+    private Instant timestamp;
 }

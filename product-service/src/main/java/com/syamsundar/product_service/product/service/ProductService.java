@@ -1,8 +1,9 @@
 package com.syamsundar.product_service.product.service;
 
-import com.syamsundar.product_service.common.exception.OutOfStockException;
 import com.syamsundar.product_service.common.exception.ProductAlreadyExistsException;
 import com.syamsundar.product_service.common.exception.ProductNotFoundException;
+import com.syamsundar.product_service.kafka.event.StockReservedEvent;
+import com.syamsundar.product_service.kafka.producer.StockReservedProducer;
 import com.syamsundar.product_service.messaging.producer.StockEventProducer;
 import com.syamsundar.product_service.product.dto.CreateProductRequest;
 import com.syamsundar.product_service.product.dto.ProductResponse;
@@ -12,11 +13,12 @@ import com.syamsundar.product_service.product.entity.Product;
 import com.syamsundar.product_service.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class ProductService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final StockEventProducer stockEventProducer;
     private final ProductCacheService productCacheService;
+    private final StockReservedProducer stockReservedProducer;
 
     public ProductResponse createProduct(CreateProductRequest request){
         Product product = new Product();
@@ -127,7 +130,20 @@ public class ProductService {
             return false;
         }
 
-        stockEventProducer.publish(request.getProductId(), quantity);
+        stockEventProducer.publish(request.getProductId(), request.getOrderId(), quantity);
+
+        StockReservedEvent event =
+                StockReservedEvent.builder()
+                        .eventId(UUID.randomUUID())
+                        .orderId(request.getOrderId())
+                        .productId(request.getProductId())
+                        .userId(request.getUserId())
+                        .quantity(request.getQuantity())
+                        .timestamp(Instant.now())
+                        .build();
+
+        stockReservedProducer.publish(event);
+
 
         return true;
     }
