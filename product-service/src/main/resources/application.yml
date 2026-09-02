@@ -27,9 +27,11 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
+        # Publish stable event-name tokens instead of Java class names.
+        spring.json.add.type.headers: true
         spring.json.type.mapping: >
-            stock-decrement-event: com.syamsundar.product_service.messaging.dto.StockDecrementEvent,
-            stock-reserved-event: com.syamsundar.product_service.kafka.event.StockReservedEvent
+          stock-decrement:com.syamsundar.product_service.messaging.dto.StockDecrementEvent,
+          stock-reserved:com.syamsundar.product_service.kafka.event.StockReservedEvent
     consumer:
       group-id: product-group
       auto-offset-reset: earliest
@@ -37,8 +39,9 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: com.syamsundar.product_service.*
+        spring.json.use.type.headers: true
         spring.json.type.mapping: >
-            stock-decrement-event: com.syamsundar.product_service.messaging.dto.StockDecrementEvent
+          stock-decrement:com.syamsundar.product_service.messaging.dto.StockDecrementEvent
 
 logging:
   level:

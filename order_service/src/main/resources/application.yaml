@@ -20,5 +20,6 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.syamsundar.order_service.*"
+        spring.json.use.type.headers: true
         spring.json.type.mapping: >
-            stock-reserved-event: com.syamsundar.order_service.kafka.event.StockReservedEvent
+          stock-reserved:com.syamsundar.order_service.kafka.event.StockReservedEvent
